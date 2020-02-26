@@ -1,0 +1,111 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background: #B0E0E6;
+}
+
+.container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+}
+
+.form-container {
+    width: 360px;
+    border: 1px solid #6495ED;
+    border-radius: 6px;
+    padding: 20px 30px 10px 10px;
+    background: #FFFFFF;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+}
+
+.formMessage {
+    text-align: center;
+    /*text-transform: uppercase;*/
+    padding: 15px 5px;
+    left: 10px;
+    position: relative;
+    margin-bottom: 20px;
+    border-radius: 4px;
+}
+
+.formMessage.sucessfull {
+    color: forestgreen;
+    border: 1px solid forestgreen;
+    background-color: #beff98;
+}
+
+.formMessage.error {
+    color: red;
+    border: 1px solid red;
+    background-color: #ffe2e9;
+}
+
+.form-container .row {
+    padding: 10px;
+    clear: both;
+}
+
+.form-container .cell {
+    display: inline-block;
+}
+
+.form-container .cell.left {
+    width: 28%;
+    text-align: right;
+    margin-right: 2%;
+}
+
+.form-container .cell.right {
+    width: 68%;
+}
+
+.form-container .cell input, .form-container .cell select {
+    width: 100%;
+    border: 1px solid #6495ED;
+    border-radius: 4px;
+    box-shadow: 0 0 3px #6495ED;
+    line-height: 24px;
+}
+
+.form-container .cell select {
+    height: 30px;
+}
+
+.form-container .row input[type=submit], #clearButton {
+    background-color: forestgreen;
+    width: 48%;
+    height: 32px;
+    border-radius: 5px;
+    border: 1px solid forestgreen;
+    /*box-shadow: 0 0 3px forestgreen;*/
+    color: #FFF;
+    text-transform: uppercase;
+    display: inline-block;
+    margin: 0 auto;
+    margin-top: 20px;
+    cursor: pointer;
+}
+
+#clearButton {
+    background-color: #FFFFFF;
+    color: forestgreen;
+    margin-left: 10px;
+}
+
+.errorMessage {
+    font-size: 14px;
+    color: red;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    float: right;
+    width: 68%;
+    text-align: left;
+}
