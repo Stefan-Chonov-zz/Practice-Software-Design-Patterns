@@ -1,4 +1,4 @@
-# PetternsPractise
+# PatternsPractise
 Practise software design patterns with PHP
 
 ## Used Patterns in this project
