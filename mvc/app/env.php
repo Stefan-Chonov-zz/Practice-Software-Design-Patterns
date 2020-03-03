@@ -14,9 +14,7 @@ $variables = [
     'DB_PASS' => '',
 
     // Logs
-    'ERROR_LOG_PATH' => __DIR__ . "/log/error.log",
-    'INFO_LOG_PATH' => __DIR__ . "/log/admin.log",
-    'WARNING_LOG_PATH' => __DIR__ . "/log/warning.log",
+    'LOG_PATH' => __DIR__ . "/log/log.log",
 
     // Views
     'VIEW_PATH' => __DIR__ . "/view/",

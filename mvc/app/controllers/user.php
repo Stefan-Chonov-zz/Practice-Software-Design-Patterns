@@ -4,20 +4,22 @@
 
 use Core\Controller;
 use Core\Log;
-use Models\UserRepository;
-use Models\CountryRepository;
+use Models\User as UserModel;
+use Models\Country;
 
 define("PHONE_MIN_LENGTH", 7);
 
 class User extends Controller
 {
+    private $log;
     private $user;
     private $country;
 
     public function __construct()
     {
-        $this->user = new UserRepository();
-        $this->country = new CountryRepository();
+        $this->log = new Log(env('LOG_PATH'));
+        $this->user = new UserModel();
+        $this->country = new Country();
     }
 
     public function index()
@@ -30,25 +32,26 @@ class User extends Controller
         try {
             $response['countries'] = $this->country->getAll();
             if ($_SERVER['REQUEST_METHOD'] == "POST") {
-                $userFormValidationResult = self::validateUserFormInput($_POST);
+                $userFormValidationResult = $this->validateUserFormInput($_POST);
                 if (!$userFormValidationResult['form']['hasError']) {
                     $id = $this->user->create($_POST);
                     if ($id > 0) {
                         $userFormValidationResult['form']['message'] = "User is stored successfully";
-                        Log::info(json_encode($_POST));
+                        $this->log->info(json_encode($_POST));
                     }
                 } else {
                     $userFormValidationResult['form']['data'] = $_POST;
                     $userFormValidationResult['form']['message'] = "Invalid form data";
-                    Log::warning('Invalid input from user: ' . PHP_EOL . json_encode($response['form']['errors'], JSON_PRETTY_PRINT));
+                    $this->log->warning('Invalid input from user: ' . PHP_EOL . json_encode($response['form']['errors'], JSON_PRETTY_PRINT));
                 }
 
                 $response = array_merge($response, $userFormValidationResult);
             }
 
         } catch (Exception $e) {
-            Log::error($e->getMessage() . PHP_EOL . $e->getTrace());
+            $this->log->error($e->getMessage() . PHP_EOL . $e->getTrace());
         }
+        
         parent::view('user/create', $response);
     }
 
@@ -68,17 +71,17 @@ class User extends Controller
                 ],
             ];
 
-            $userForm['form']['errors'] = self::checkFormInputsForEmptyValues($inputs);
+            $userForm['form']['errors'] = $this->checkFormInputsForEmptyValues($inputs);
             foreach ($userForm['form']['errors'] as $key => $value) {
                 $userForm['form']['errors'][$key] = [ 'message' => 'Field cannot be empty' ];
             }
 
-            $isFirstNameContainsOnlyLetters = self::hasOnlyLeters($inputs['firstName']);
+            $isFirstNameContainsOnlyLetters = $this->hasOnlyLeters($inputs['firstName']);
             if (!isset($userForm['form']['errors']['firstName']) && !$isFirstNameContainsOnlyLetters) {
                 $userForm['form']['errors']['firstName'] = [ 'message' => 'Not valid name' ];
             }
 
-            $isSurNameContainsOnlyLetters = self::hasOnlyLeters($inputs['surName']);
+            $isSurNameContainsOnlyLetters = $this->hasOnlyLeters($inputs['surName']);
             if (!isset($userForm['form']['errors']['surName']) && !$isSurNameContainsOnlyLetters) {
                 $userForm['form']['errors']['surName'] = [ 'message' => 'Not valid name' ];
             }
@@ -115,7 +118,7 @@ class User extends Controller
             }
         } catch (\Exception $ex) {
             throw $ex;
-            Log::error($ex->getMessage() . PHP_EOL . $ex->getTraceAsString());
+            $this->log->error($ex->getMessage() . PHP_EOL . $ex->getTraceAsString());
         }
 
         return $userForm;
@@ -129,7 +132,6 @@ class User extends Controller
     private function checkFormInputsForEmptyValues($inputs)
     {
         $results = [];
-
         foreach ($inputs as $key => $value) {
             if (!isset($value) || empty($value)) {
                 $results[$key] = TRUE;

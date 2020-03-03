@@ -14,7 +14,7 @@ class DB
                 self::$instance->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
             }
         } catch(\PDOException $exception) {
-             Log::error($exception->getMessage());
+            throw $exception;
         }
 
         return self::$instance;
