@@ -1,6 +1,0 @@
-[2020-02-26 07:40:04] SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry 'kkkkkkk@kkk.kk' for key 'user_email_uindex'
-#0 C:\xampp\htdocs\mvc\app\core\ModelRepository.php(35): PDOStatement->execute(Array)
-#1 C:\xampp\htdocs\mvc\app\controllers\user.php(35): Core\ModelRepository->create(Array)
-#2 C:\xampp\htdocs\mvc\app\core\App.php(33): User->create()
-#3 C:\xampp\htdocs\mvc\public\index.php(5): Core\App->__construct()
-#4 {main}

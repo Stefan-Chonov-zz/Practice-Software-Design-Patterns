@@ -2,7 +2,6 @@
 
 namespace Models;
 
-use Core\DB;
 use Core\Log;
 use Core\Model;
 
@@ -16,10 +15,10 @@ class User extends Model
     /**
      * User constructor.
      */
-    public function __construct()
+    public function __construct(\PDO $db)
     {
         $this->log = new Log(env('LOG_PATH'));
-        $this->db = DB::getInstance();
+        $this->db = $db;
         $this->table = 'user';
         parent::__construct($this->db, $this->table);
     }
@@ -32,8 +31,10 @@ class User extends Model
     public function findByEmail($email)
     {
         try {
-            $query = "SELECT * FROM $this->table WHERE email = '$email' LIMIT 1";
-            $stmt = $this->db->query($query);
+            $query = "SELECT * FROM " . $this->table . " WHERE email = :email LIMIT 1";
+            $stmt = $this->db->prepare($query);
+            $stmt->bindValue(':email', $email, \PDO::PARAM_STR);
+            $stmt->execute();
             $result = $stmt->fetch(\PDO::FETCH_ASSOC);
 
             return $result;

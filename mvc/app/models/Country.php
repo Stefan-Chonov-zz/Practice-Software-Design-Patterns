@@ -2,7 +2,6 @@
 
 namespace Models;
 
-use Core\DB;
 use Core\Model;
 
 class Country extends Model
@@ -11,11 +10,11 @@ class Country extends Model
     protected $table;
 
     /**
-     * User constructor.
+     * Country constructor.
      */
-    public function __construct()
+    public function __construct($db)
     {
-        $this->db = DB::getInstance();
+        $this->db = $db;
         $this->table = 'country';
         parent::__construct($this->db, $this->table);
     }

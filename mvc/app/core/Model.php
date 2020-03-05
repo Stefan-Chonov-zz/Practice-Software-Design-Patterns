@@ -58,8 +58,9 @@ class Model implements RepositoryInterface
     {
         try {
             $query = "SELECT * FROM " . $this->table . " WHERE id = :id LIMIT 1";
-            $stmt = $this->db->query($query);
-            $stmt->bindParam(':id', $id, \PDO::PARAM_INT);
+            $stmt = $this->db->prepare($query);
+            $stmt->bindValue(':id', (int) $id, \PDO::PARAM_INT);
+            $stmt->execute();
             $result = $stmt->fetch(\PDO::FETCH_ASSOC);
 
             return $result;
@@ -77,6 +78,7 @@ class Model implements RepositoryInterface
         try {
             $query = "SELECT * FROM " . $this->table;
             $stmt = $this->db->query($query);
+            $stmt->execute();
             $results = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
             return $results;
@@ -93,11 +95,8 @@ class Model implements RepositoryInterface
     public function update($model)
     {
         try {
-            $query = "SELECT * FROM " . $this->table . " WHERE id = :id LIMIT 1";
-            $stmt = $this->db->query($query);
-            $stmt->bindParam(':id', $model['id'], \PDO::PARAM_INT);
-            $result = $stmt->fetch();
-            if (isset($result) && !empty($result)) {
+            $user = $this->getById($model['id']);
+            if ($user) {
                 $updateStatementAliases = $this->sqlHelper->prepareAliases($model);
                 $query = "UPDATE " . $this->table . " SET $updateStatementAliases WHERE id = :id";
                 $stmt = $this->db->prepare($query);
