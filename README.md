@@ -4,5 +4,5 @@ Practise software design patterns with PHP
 ## Used Patterns in this project
 - MVC
 - Singleton
-- Repository
+- Dependancy Injection
 - S.O.L.I.D Principles
