@@ -7,12 +7,11 @@ use App\Core\Interfaces\StrategyInterface;
 class SampleStrategy implements StrategyInterface
 {
     /**
-     * @param string $model
      * @param array $data
      */
-    public function execute($model, $data)
+    public function execute($data)
     {
         // TODO: Implement execute() method.
-        // return (new Model(DB::getMySqlInstance(), $model))->func($data);
+        // return (new Model(DB::getMySqlInstance(), $data['model']))->func($data['data']);
     }
 }

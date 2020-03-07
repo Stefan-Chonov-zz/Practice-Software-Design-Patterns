@@ -4,5 +4,5 @@ namespace App\Core\Interfaces;
 
 interface StrategyInterface
 {
-    public function execute($model, $data);
+    public function execute($data);
 }

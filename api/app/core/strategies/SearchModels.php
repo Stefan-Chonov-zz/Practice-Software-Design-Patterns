@@ -9,12 +9,11 @@ use App\Core\Model;
 class SearchModels implements StrategyInterface
 {
     /**
-     * @param string $model
      * @param array $data
      * @return array
      */
-    public function execute($model, $data)
+    public function execute($data)
     {
-        return (new Model(DB::getMySqlInstance(), $model))->get($data);
+        return (new Model(DB::getMySqlInstance(), $data['model']))->get($data['data']);
     }
 }

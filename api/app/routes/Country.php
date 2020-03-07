@@ -4,16 +4,12 @@ use App\Core\BaseRoute;
 
 class Country extends BaseRoute
 {
-    protected $modelName;
-
     /**
      * Country constructor.
      */
     public function __construct()
     {
-        $this->modelName = get_class($this);
-
-        parent::__construct($this->modelName);
+        parent::__construct(get_class($this));
     }
 
     /**

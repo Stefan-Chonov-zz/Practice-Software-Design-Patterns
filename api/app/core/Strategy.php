@@ -31,8 +31,8 @@ class Strategy
      * @param array $data
      * @return mixed
      */
-    public function execute(string $modelName, $data)
+    public function execute($data)
     {
-        return $this->strategy->execute($modelName, $data);
+        return $this->strategy->execute($data);
     }
 }

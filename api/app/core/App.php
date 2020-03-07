@@ -53,9 +53,10 @@ class App
     public function getRequestParameters()
     {
         $putDeleteParameters = file_get_contents("php://input");
+        $putDeleteParameters = !empty($putDeleteParameters) ? json_decode($putDeleteParameters, true) : [];
         $getParameters = $_GET;
         $postParameters = $_POST;
 
-        return array_merge_recursive(json_decode($putDeleteParameters, true), $getParameters, $postParameters);
+        return array_merge_recursive($putDeleteParameters, $getParameters, $postParameters);
     }
 }

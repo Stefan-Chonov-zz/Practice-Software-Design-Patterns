@@ -9,12 +9,11 @@ use App\Core\Model;
 class DeleteModel implements StrategyInterface
 {
     /**
-     * @param string $model
      * @param array $data
      * @return int
      */
-    public function execute($model, $data)
+    public function execute($data)
     {
-        return (new Model(DB::getMySqlInstance(), $model))->delete($data);
+        return (new Model(DB::getMySqlInstance(), $data['model']))->delete($data['data']);
     }
 }

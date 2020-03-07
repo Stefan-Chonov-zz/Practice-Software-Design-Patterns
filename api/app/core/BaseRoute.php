@@ -15,7 +15,7 @@ abstract class BaseRoute
 
     /**
      * BaseRoute constructor.
-     * @param $modelName
+     * @param string $modelName
      */
     protected function __construct($modelName)
     {
@@ -29,14 +29,15 @@ abstract class BaseRoute
     protected function index($data = [])
     {
         $strategy = $this->defineStrategy($_SERVER['REQUEST_METHOD'], $data);
-        $response = $strategy->execute($this->modelName, $data);
+        $data = [ 'model' => $this->modelName, 'data' => $data ];
+        $response = $strategy->execute($data);
 
         header('Content-Type: application/json');
         echo json_encode($response);
     }
 
     /**
-     * @param $requestMethod
+     * @param string $requestMethod
      * @param array $data
      * @return Strategy
      */
