@@ -14,7 +14,7 @@ class SqlHelper
     }
 
     /**
-     * @param $parameters
+     * @param array $parameters
      * @return array
      */
     public function prepareParameters($parameters)
@@ -32,7 +32,7 @@ class SqlHelper
     }
 
     /**
-     * @param $parameters
+     * @param array $parameters
      * @return string
      */
     public function prepareAliases($parameters)
@@ -50,7 +50,7 @@ class SqlHelper
     }
 
     /**
-     * @param $parameters
+     * @param array $parameters
      * @return string
      */
     public function whereAnd($parameters)
@@ -73,7 +73,7 @@ class SqlHelper
     }
 
     /**
-     * @param $parameters
+     * @param array $parameters
      * @return string
      */
     public function whereOr($parameters)

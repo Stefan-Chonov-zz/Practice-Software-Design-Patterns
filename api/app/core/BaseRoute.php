@@ -13,11 +13,19 @@ abstract class BaseRoute
 {
     protected $modelName;
 
+    /**
+     * BaseRoute constructor.
+     * @param $modelName
+     */
     protected function __construct($modelName)
     {
         $this->modelName = $modelName;
     }
 
+    /**
+     * @param array $data
+     * @return void
+     */
     protected function index($data = [])
     {
         $strategy = $this->defineStrategy($_SERVER['REQUEST_METHOD'], $data);
@@ -27,6 +35,11 @@ abstract class BaseRoute
         echo json_encode($response);
     }
 
+    /**
+     * @param $requestMethod
+     * @param array $data
+     * @return Strategy
+     */
     protected function defineStrategy($requestMethod, $data = [])
     {
         $strategy = new Strategy(new ListModels());

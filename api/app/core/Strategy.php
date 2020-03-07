@@ -19,12 +19,18 @@ class Strategy
 
     /**
      * @param StrategyInterface $strategy
+     * @return void
      */
     public function setStrategy(StrategyInterface $strategy)
     {
         $this->strategy = $strategy;
     }
 
+    /**
+     * @param string $modelName
+     * @param array $data
+     * @return mixed
+     */
     public function execute(string $modelName, $data)
     {
         return $this->strategy->execute($modelName, $data);

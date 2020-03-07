@@ -53,9 +53,9 @@ class Model implements ModelInterface
     }
 
     /**
-     * Get entry by id
-     * @param $data
-     * @return mixed
+     * Get entry/entries
+     * @param array $data
+     * @return array
      */
     public function get($data = [])
     {
@@ -64,9 +64,8 @@ class Model implements ModelInterface
             $query .= count($data) > 0 ? " WHERE " . $this->sqlHelper->whereAnd($data) : '';
             $stmt = $this->db->prepare($query);
             $stmt->execute($this->sqlHelper->prepareParameters($data));
-            $result = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
-            return $result;
+            return $stmt->fetchAll(\PDO::FETCH_ASSOC);
         } catch (\Exception $ex) {
             $this->log->error($ex->getMessage() . PHP_EOL . $ex->getTraceAsString());
         }
@@ -75,7 +74,7 @@ class Model implements ModelInterface
     /**
      * Update entry
      * @param $data
-     * @return mixed|void
+     * @return int
      */
     public function update($data)
     {
@@ -95,8 +94,9 @@ class Model implements ModelInterface
     }
 
     /**
-     * @param $id
-     * @return mixed|void
+     * Delete entry
+     * @param $data
+     * @return int
      */
     public function delete($data)
     {

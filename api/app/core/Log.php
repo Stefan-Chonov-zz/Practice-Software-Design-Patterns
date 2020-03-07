@@ -9,6 +9,10 @@ class Log implements LogInterface
 {
     private $logFilePath;
 
+    /**
+     * Log constructor.
+     * @param string $logFilePath
+     */
     public function __construct($logFilePath)
     {
         $this->logFilePath = $logFilePath;

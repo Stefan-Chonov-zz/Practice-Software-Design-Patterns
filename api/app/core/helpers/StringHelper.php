@@ -5,7 +5,7 @@ namespace App\Core\Helpers;
 class StringHelper
 {
     /**
-     * @param $string
+     * @param string $string
      * @return bool
      */
     public static function isEmpty($string)
@@ -19,7 +19,7 @@ class StringHelper
     }
 
     /**
-     * @param $string
+     * @param string $string
      * @return bool
      */
     public static function hasOnlyLetters($string)
@@ -31,7 +31,7 @@ class StringHelper
     }
 
     /**
-     * @param $string
+     * @param string $string
      * @return bool
      */
     public static function hasOnlyDigits($string)
@@ -40,8 +40,8 @@ class StringHelper
     }
 
     /**
-     * @param $string
-     * @return mixed
+     * @param string $string
+     * @return bool
      */
     public static function isEmail($string)
     {

@@ -8,6 +8,7 @@ class DB
     protected static $pgSqlInstance;
 
     /**
+     * Get MySql Instance
      * @return \PDO
      */
     public static function getMySqlInstance() {
@@ -25,6 +26,7 @@ class DB
     }
 
     /**
+     * Get PostgreSql Instance
      * @return \PDO
      */
     public static function getPgSqlInstance() {
