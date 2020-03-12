@@ -7,29 +7,28 @@ use App\Core\Interfaces\ModelInterface;
 
 class Model implements ModelInterface
 {
-    private $log;
     private $sqlHelper;
 
-    protected $db;
     protected $table;
+    protected $db;
 
     /**
      * Model constructor.
+     * @param string $table
      * @param \PDO $db
-     * @param string $tableName
      */
-    public function __construct($db, $table)
+    public function __construct($table, $db)
     {
-        $this->log = new Log(env('LOG_PATH'));
         $this->sqlHelper = new SqlHelper();
-        $this->db = $db;
         $this->table = $table;
+        $this->db = $db;
     }
 
     /**
      * Create entry
      * @param array $data
      * @return int
+     * @throws \Exception
      */
     public function create($data)
     {
@@ -37,18 +36,15 @@ class Model implements ModelInterface
             $parametersAliases = $this->sqlHelper->prepareParameters($data);
             $query = "INSERT INTO " . $this->table . " (`" . join("`,`", array_keys($data)) . "`) VALUES (" . join(',', array_keys($parametersAliases)) . ")";
             $stmt = $this->db->prepare($query);
-            foreach ($parametersAliases as $key => $value) {
-                $stmt->bindParam($key, $value);
-            }
 
             $insertedRowID = 0;
-            if ($stmt->execute()) {
+            if ($stmt->execute($parametersAliases)) {
                 $insertedRowID = $this->db->lastInsertId();
             }
 
             return $insertedRowID;
         } catch (\Exception $ex) {
-            $this->log->error($ex->getMessage() . PHP_EOL . $ex->getTraceAsString());
+            throw $ex;
         }
     }
 
@@ -56,18 +52,19 @@ class Model implements ModelInterface
      * Get entry/entries
      * @param array $data
      * @return array
+     * @throws \Exception
      */
     public function get($data = [])
     {
         try {
             $query = "SELECT * FROM " . $this->table;
-            $query .= count($data) > 0 ? " WHERE " . $this->sqlHelper->whereAnd($data) : '';
+            $query .= count($data) > 0 ? " WHERE " . join('', $this->sqlHelper->prepareAliases($data, '',' AND ')) : '';
             $stmt = $this->db->prepare($query);
             $stmt->execute($this->sqlHelper->prepareParameters($data));
 
             return $stmt->fetchAll(\PDO::FETCH_ASSOC);
         } catch (\Exception $ex) {
-            $this->log->error($ex->getMessage() . PHP_EOL . $ex->getTraceAsString());
+            throw $ex;
         }
     }
 
@@ -75,13 +72,16 @@ class Model implements ModelInterface
      * Update entry
      * @param $data
      * @return int
+     * @throws \Exception
      */
     public function update($data)
     {
         try {
-            $user = $this->get([ 'id' => $data['id'] ]);
-            if ($user) {
-                $query = "UPDATE " . $this->table . " SET " . $this->sqlHelper->prepareAliases($data) . " WHERE id = :id";
+            $model = $this->get([ 'id' => $data['id'] ]);
+            if ($model) {
+                $modelData = $data;
+                unset($modelData['id']);
+                $query = "UPDATE " . $this->table . " SET " . join(',', $this->sqlHelper->prepareAliases($modelData)) . " WHERE `id` = :id";
                 $stmt = $this->db->prepare($query);
                 $data = $this->sqlHelper->prepareParameters($data);
                 $stmt->execute($data);
@@ -89,7 +89,7 @@ class Model implements ModelInterface
                 return $stmt->rowCount();
             }
         } catch (\Exception $ex) {
-            $this->log->error($ex->getMessage() . PHP_EOL . $ex->getTraceAsString());
+            throw $ex;
         }
     }
 
@@ -97,17 +97,19 @@ class Model implements ModelInterface
      * Delete entry
      * @param $data
      * @return int
+     * @throws \Exception
      */
     public function delete($data)
     {
         try {
-            $query = "DELETE FROM " . $this->table . " WHERE " . $this->sqlHelper->prepareAliases($data);
+            $query = "DELETE FROM " . $this->table . " WHERE `id` = :id";
             $stmt = $this->db->prepare($query);
-            $stmt->execute($this->sqlHelper->prepareParameters($data));
+            $stmt->bindParam(':id', $data['id']);
+            $stmt->execute();
 
             return $stmt->rowCount();
         } catch (\Exception $ex) {
-            $this->log->error($ex->getMessage() . PHP_EOL . $ex->getTraceAsString());
+            throw $ex;
         }
     }
 }

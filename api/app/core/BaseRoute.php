@@ -3,14 +3,20 @@
 namespace App\Core;
 
 use App\Core\Strategy;
-use App\Core\Strategies\CreateModel;
-use App\Core\Strategies\DeleteModel;
-use App\Core\Strategies\ListModels;
-use App\Core\Strategies\SearchModels;
-use App\Core\Strategies\UpdateModel;
+use App\Core\Routes\CreateModel;
+use App\Core\Routes\DeleteModel;
+use App\Core\Routes\ListModels;
+use App\Core\Routes\SearchModels;
+use App\Core\Routes\UpdateModel;
+use App\Core\Response\CsvResponse;
+use App\Core\Response\JsonResponse;
+use App\Core\Response\XmlResponse;
+use App\Core\Helpers\RequestMethod;
+use App\Core\Helpers\ResponseFormat;
 
 abstract class BaseRoute
 {
+    private $log;
     protected $modelName;
 
     /**
@@ -19,6 +25,7 @@ abstract class BaseRoute
      */
     protected function __construct($modelName)
     {
+        $this->log = new Log(env('LOG_PATH'));
         $this->modelName = $modelName;
     }
 
@@ -26,41 +33,83 @@ abstract class BaseRoute
      * @param array $data
      * @return void
      */
-    protected function index($data = [])
+    protected function baseIndex($data = [])
     {
-        $strategy = $this->defineStrategy($_SERVER['REQUEST_METHOD'], $data);
-        $data = [ 'model' => $this->modelName, 'data' => $data ];
-        $response = $strategy->execute($data);
+        try {
+            $responseFormat = '';
+            if (isset($data['responseFormat']) && !empty($data['responseFormat'])) {
+                $responseFormat = $data['responseFormat'];
+                unset($data['responseFormat']);
+            }
 
-        header('Content-Type: application/json');
-        echo json_encode($response);
+            $response = $this->request($_SERVER['REQUEST_METHOD'], $data);
+            echo $this->response($response, $responseFormat);
+        } catch (\Exception $ex) {
+            $this->log->error($ex->getMessage() . PHP_EOL . $ex->getTraceAsString());
+        }
     }
 
     /**
      * @param string $requestMethod
      * @param array $data
-     * @return Strategy
+     * @return mixed
+     * @throws \Exception
      */
-    protected function defineStrategy($requestMethod, $data = [])
+    protected function request($requestMethod, $data = [])
     {
-        $strategy = new Strategy(new ListModels());
-        switch ($requestMethod) {
-            case 'GET':
-                if (isset($data) && count($data) > 0) {
-                    $strategy->setStrategy(new SearchModels());
-                }
-                break;
-            case 'POST':
-                $strategy->setStrategy(new CreateModel());
-                break;
-            case 'PUT':
-                $strategy->setStrategy(new UpdateModel());
-                break;
-            case 'DELETE':
-                $strategy->setStrategy(new DeleteModel());
-                break;
-        }
+        try {
+            $requestMethod = strtoupper(trim($requestMethod));
+            $strategy = new Strategy(new ListModels());
+            switch ($requestMethod) {
+                case RequestMethod::GET:
+                    if (isset($data) && count($data) > 0) {
+                        $strategy->setStrategy(new SearchModels());
+                    }
+                    break;
+                case RequestMethod::POST:
+                    $strategy->setStrategy(new CreateModel());
+                    break;
+                case RequestMethod::PUT:
+                    $strategy->setStrategy(new UpdateModel());
+                    break;
+                case RequestMethod::DELETE:
+                    $strategy->setStrategy(new DeleteModel());
+                    break;
+            }
 
-        return $strategy;
+            return $strategy->execute([ 'model' => $this->modelName, 'data' => $data ]);
+        } catch (\Exception $ex) {
+            throw $ex;
+        }
+    }
+
+    /**
+     * @param array $response
+     * @param string $responseFormat
+     * @return mixed
+     * @throws \Exception
+     */
+    protected function response($response = [], $responseFormat = ResponseFormat::JSON)
+    {
+        try {
+            $responseFormat = strtoupper(trim($responseFormat));
+            $strategy = new Strategy(new JsonResponse());
+            $contentType = 'application/json';
+            switch ($responseFormat) {
+                case ResponseFormat::XML:
+                    $contentType = 'application/xml';
+                    $strategy->setStrategy(new XmlResponse());
+                    break;
+                case ResponseFormat::CSV:
+                    $contentType = 'text/csv';
+                    $strategy->setStrategy(new CsvResponse());
+                    break;
+            }
+
+            header("Content-Type: $contentType");
+            return $strategy->execute($response);
+        } catch (\Exception $ex) {
+            throw $ex;
+        }
     }
 }

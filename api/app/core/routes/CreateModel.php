@@ -1,19 +1,20 @@
 <?php
 
-namespace App\Core\Strategies;
+namespace App\Core\Routes;
 
 use App\Core\Interfaces\StrategyInterface;
 use App\Core\DB;
 use App\Core\Model;
 
-class DeleteModel implements StrategyInterface
+class CreateModel implements StrategyInterface
 {
     /**
      * @param array $data
      * @return int
+     * @throws \Exception
      */
     public function execute($data)
     {
-        return (new Model(DB::getMySqlInstance(), $data['model']))->delete($data['data']);
+        return (new Model($data['model'], DB::getMySqlInstance()))->create($data['data']);
     }
 }

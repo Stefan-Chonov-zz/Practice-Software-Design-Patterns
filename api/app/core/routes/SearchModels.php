@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Core\Strategies;
+namespace App\Core\Routes;
 
 use App\Core\Interfaces\StrategyInterface;
 use App\Core\DB;
@@ -11,9 +11,10 @@ class SearchModels implements StrategyInterface
     /**
      * @param array $data
      * @return array
+     * @throws \Exception
      */
     public function execute($data)
     {
-        return (new Model(DB::getMySqlInstance(), $data['model']))->get($data['data']);
+        return (new Model($data['model'], DB::getMySqlInstance()))->get($data['data']);
     }
 }

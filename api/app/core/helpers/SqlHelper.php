@@ -33,58 +33,29 @@ class SqlHelper
 
     /**
      * @param array $parameters
-     * @return string
+     * @param string $prefix
+     * @param string $suffix
+     * @return array
      */
-    public function prepareAliases($parameters)
+    public function prepareAliases($parameters, $prefix = '', $suffix = '')
     {
         try {
             $result = [];
-            foreach ($parameters as $key => $value) {
-                $result[$key] = $key . ' = :' . $key;
-            }
-
-            return join(',', $result);
-        } catch (\Exception $ex) {
-            $this->log->error($ex->getMessage() . PHP_EOL . $ex->getTraceAsString());
-        }
-    }
-
-    /**
-     * @param array $parameters
-     * @return string
-     */
-    public function whereAnd($parameters)
-    {
-        try {
-            $result = '';
             $index = 0 ;
             foreach ($parameters as $key => $value) {
-                $result .= $key . ' = :' . $key;
-                if ($index < count($parameters) - 1) {
-                    $result .= ' AND ';
+                $result[$key] = '';
+                if (!empty($prefix) && $index < count($parameters) - 1) {
+                    $result[$key] .= $prefix;
                 }
-                $index++;
-            }
 
-            return $result;
-        } catch (\Exception $ex) {
-            $this->log->error($ex->getMessage() . PHP_EOL . $ex->getTraceAsString());
-        }
-    }
+                if ($key == 'key' || $key == 'id') {
+                    $result[$key] .= '`' . $key . '` = :' . $key;
+                } else {
+                    $result[$key] .= $key . ' = :' . $key;
+                }
 
-    /**
-     * @param array $parameters
-     * @return string
-     */
-    public function whereOr($parameters)
-    {
-        try {
-            $result = '';
-            $index = 0 ;
-            foreach ($parameters as $key => $value) {
-                $result .= $key . ' = :' . $key;
-                if ($index < count($parameters) - 1) {
-                    $result .= ' OR ';
+                if (!empty($suffix) && $index < count($parameters) - 1) {
+                    $result[$key] .= $suffix;
                 }
                 $index++;
             }

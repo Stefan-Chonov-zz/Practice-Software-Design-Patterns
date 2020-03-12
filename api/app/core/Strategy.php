@@ -27,7 +27,6 @@ class Strategy
     }
 
     /**
-     * @param string $modelName
      * @param array $data
      * @return mixed
      */

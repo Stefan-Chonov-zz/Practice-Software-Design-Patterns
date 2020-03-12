@@ -17,6 +17,9 @@ class App
         $this->startWalking();
     }
 
+    /**
+     *
+     */
     private function startWalking()
     {
         $url = $this->parseUrl();
@@ -43,6 +46,9 @@ class App
         $obj->$func($this->crumbs);
     }
 
+    /**
+     * @return array
+     */
     public function parseUrl()
     {
         if (isset($_GET['url'])) {
@@ -50,13 +56,37 @@ class App
         }
     }
 
+    /**
+     * @return array
+     */
     public function getRequestParameters()
     {
-        $putDeleteParameters = file_get_contents("php://input");
-        $putDeleteParameters = !empty($putDeleteParameters) ? json_decode($putDeleteParameters, true) : [];
-        $getParameters = $_GET;
-        $postParameters = $_POST;
+        try {
+            $putDeleteParameters = file_get_contents("php://input");
+            if (!empty($putDeleteParameters)) {
+                $putDeleteParameters = json_decode($putDeleteParameters, true);
+            }
 
-        return array_merge_recursive($putDeleteParameters, $getParameters, $postParameters);
+            if (empty($putDeleteParameters)) {
+                $putDeleteParameters = [];
+            }
+
+            $getParameters = $_GET;
+
+            $postParameters = $_POST;
+            if (count($putDeleteParameters) == 0 && !empty($postParameters)) {
+                foreach ($postParameters as $key => $value) {
+                    if (strpos($key, '_') !== false) {
+                        throw new \Exception(json_encode([ 'message' => 'Post parameters should be posted in raw JSON format. Form-data is not supported.' ]));
+                    }
+                }
+            } else {
+                $postParameters = [];
+            }
+
+            return array_merge_recursive($putDeleteParameters, $getParameters, $postParameters);
+        } catch (\Exception $ex) {
+            print_r($ex->getMessage());
+        }
     }
 }
