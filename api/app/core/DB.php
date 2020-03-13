@@ -7,6 +7,8 @@ class DB
     protected static $mySqlInstance;
     protected static $pgSqlInstance;
 
+    private function __construct() { }
+
     /**
      * Get MySql Instance
      * @return \PDO

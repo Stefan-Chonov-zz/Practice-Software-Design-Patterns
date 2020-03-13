@@ -23,7 +23,7 @@ class User extends Model
      */
     public function __construct()
     {
-        $this->log = new Log(env('LOG_PATH'));
+        $this->log = Log::getInstance(env('LOG_PATH'));
         $this->userModel = new UserModel();
         $this->countryModel = new CountryModel();
 
@@ -31,30 +31,28 @@ class User extends Model
     }
 
     /**
-     * @param array $data
+     * @param array $inputs
      * @return void
      * @throws Exception
      */
-    public function index($data = [])
+    public function index($inputs = [])
     {
-        $requiredFields = [ ];
-        if ($_SERVER['REQUEST_METHOD'] == RequestMethod::GET) {
-            $requiredFields = [ 'id', 'firstName', 'surName', 'address', 'countryId', 'postcode', 'phone', 'email' ];
-        } else if ($_SERVER['REQUEST_METHOD'] == RequestMethod::POST) {
+        $validFields = [ 'id', 'firstName', 'surName', 'address', 'countryId', 'postcode', 'phone', 'email', 'responseFormat' ];
+        $requiredFields = [];
+        if ($_SERVER['REQUEST_METHOD'] == RequestMethod::POST) {
             $requiredFields = [ 'firstName', 'surName', 'address', 'countryId', 'postcode', 'phone', 'email' ];
         } else if ($_SERVER['REQUEST_METHOD'] == RequestMethod::PUT || $_SERVER['REQUEST_METHOD'] == RequestMethod::DELETE) {
             $requiredFields = [ 'id' ];
         }
 
-        parent::baseIndex($data, $requiredFields);
+        parent::baseIndex($inputs, $requiredFields, $validFields);
     }
 
     /**
      * @param $inputs
      * @return array
      */
-    protected function inputValidation($inputs)
-    {
+    protected function inputsValidation($inputs) {
         try {
             $errors = [];
 
@@ -62,18 +60,6 @@ class User extends Model
                 switch($key) {
                     case 'id': break;
                     case 'firstName':
-                        $isFirstNameEmpty = StringHelper::isEmpty($inputs[$key]);
-                        if ($isFirstNameEmpty) {
-                            $errors[$key] = [ 'message' => 'Field cannot be empty' ];
-                        }
-
-                        if (!isset($errors[$key]) && empty($errors[$key])) {
-                            $isFirstNameContainsOnlyLetters = StringHelper::hasOnlyLetters($inputs['firstName']);
-                            if (!$isFirstNameContainsOnlyLetters) {
-                                $errors[$key] = ['message' => 'Not valid name'];
-                            }
-                        }
-                        break;
                     case 'surName':
                         $isSurNameEmpty = StringHelper::isEmpty($inputs[$key]);
                         if ($isSurNameEmpty) {
@@ -152,14 +138,14 @@ class User extends Model
                         }
                         break;
                     default:
-                        $errors[$key] = [ 'message' => "Parameter '$key' is not supported" ];
+                        $errors[$key] = [ 'message' => "Invalid parameter name '$key'" ];
                         break;
                 }
             }
 
             return $errors;
         } catch (\Exception $ex) {
-             $this->log->error($ex->getMessage() . PHP_EOL . $ex->getTraceAsString());
+            $this->log->error($ex->getMessage() . PHP_EOL . $ex->getTraceAsString());
         }
     }
 }

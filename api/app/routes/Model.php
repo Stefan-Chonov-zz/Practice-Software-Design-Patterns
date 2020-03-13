@@ -16,73 +16,62 @@ abstract class Model extends BaseRoute
      */
     public function __construct()
     {
-        $this->log = new Log(env('LOG_PATH'));
+        $this->log = Log::getInstance(env('LOG_PATH'));
 
         parent::__construct(ClassName::getShortName($this));
     }
 
     /**
-     * @param array $requiredFields
-     * @param array $data
+     * @param array $inputs
+     * @param array $requiredFieldsNames
+     * @param array $validFieldsNames
      * @return void
      */
-    public function baseIndex($data = [], $requiredFields = [])
+    protected function baseIndex($inputs = [], $requiredFieldsNames = [], $validFieldsNames = [])
     {
         try {
             $responseFormat = '';
-            if (isset($data['responseFormat']) && !empty($data['responseFormat'])) {
-                $responseFormat = $data['responseFormat'];
-                unset($data['responseFormat']);
+            if (isset($inputs['responseFormat']) && !empty($inputs['responseFormat'])) {
+                $responseFormat = $inputs['responseFormat'];
+                unset($inputs['responseFormat']);
             }
 
+            $response = [];
             $responseStatus = [];
-            $responseMessage = '';
-            $responseCode = '';
-            switch ($_SERVER['REQUEST_METHOD']) {
-                case RequestMethod::GET:
-                    $invalidParameters = $this->supportedFields($requiredFields, $data);
-                    if (count($invalidParameters) > 0) {
-                        $response = $invalidParameters;
-                        $responseMessage = "Occur error";
-                        $responseCode = 'Error';
-                    } else {
-                        $response = parent::request($_SERVER['REQUEST_METHOD'], $data);
-                    }
-                    break;
-                case RequestMethod::POST:
-                case RequestMethod::PUT:
-                    $missingFields = $this->requiredFields($requiredFields, $data);
-                    $inputValidationResults = array_merge($missingFields, $this->inputValidation($data));
-                    if (isset($inputValidationResults) && empty($inputValidationResults)) {
-                        $response = parent::request($_SERVER['REQUEST_METHOD'], $data);
-                        if ($response > 0) {
-                            $responseMessage = "Record is stored successfully";
-                            $responseCode = 'OK';
+
+            $inputsValidationResults = $this->userInputValidation($inputs, $requiredFieldsNames, $validFieldsNames);
+            if (!isset($inputsValidationResults) || empty($inputsValidationResults)) {
+                $response = parent::request($_SERVER['REQUEST_METHOD'], $inputs);
+                switch ($_SERVER['REQUEST_METHOD']) {
+                    case RequestMethod::GET:
+                        if (empty($response)) {
+                            $responseStatus = $this->defineResponseStatus("No results found", "OK");
                         }
-                    } else {
-                        $response = $inputValidationResults;
-                        $responseMessage = "Occur error";
-                        $responseCode = 'Error';
-                    }
-                    break;
-                case RequestMethod::DELETE:
-                    $response = parent::request($_SERVER['REQUEST_METHOD'], $data);
-                    if ($response > 0) {
-                        $responseMessage = "Delete is successful";
-                        $responseCode = 'OK';
-                    } else {
-                        $responseMessage = "Record not exists";
-                        $responseCode = 'Error';
-                    }
-                    break;
+                        break;
+                    case RequestMethod::POST:
+                    case RequestMethod::PUT:
+                        if ($response > 0) {
+                            $responseStatus = $this->defineResponseStatus("Record is stored successfully", "OK");
+                        } else {
+                            $responseStatus = $this->defineResponseStatus("Nothing to update", "OK");
+                        }
+                        $response = [];
+                        break;
+                    case RequestMethod::DELETE:
+                        if ($response > 0) {
+                            $responseStatus = $this->defineResponseStatus("Delete is successful", "OK");
+                        } else {
+                            $responseStatus = $this->defineResponseStatus("Record not exists", "OK");
+                        }
+                        $response = [];
+                        break;
+                }
+            } else {
+                $responseStatus = $this->defineResponseStatus("Occur error", "ERROR");
             }
 
-            if (!empty($responseMessage) && !empty($responseCode)) {
-                $response = is_array($response) ? $response : [];
-                $responseStatus['message'] = $responseMessage;
-                $responseStatus['status'] = $responseCode;
-
-                $response = array_merge($responseStatus, $response);
+            if (!empty($responseStatus)) {
+                $response = array_merge($responseStatus, $inputsValidationResults, $response);
             }
 
             echo parent::response($response, $responseFormat);
@@ -93,20 +82,56 @@ abstract class Model extends BaseRoute
 
     /**
      * @param $inputs
+     * @param $requiredFields
+     * @param $validFields
      * @return array
      */
-    protected abstract function inputValidation($inputs);
+    private function userInputValidation($inputs, $requiredFields, $validFields)
+    {
+        $putRequiredFields = [ 'id' ];
+        $deleteRequiredFields = [ 'id' ];
+
+        $inputValidationResults = [];
+        $missingRequiredFields = [];
+
+        switch ($_SERVER['REQUEST_METHOD']) {
+            case RequestMethod::PUT:
+                $requiredFields = $putRequiredFields;
+            case RequestMethod::POST:
+                $missingRequiredFields = $this->checkForMissingRequiredFields($requiredFields, $inputs);
+                $inputValidationResults = $this->inputsValidation($inputs);
+                break;
+            case RequestMethod::DELETE:
+                $missingRequiredFields = $this->checkForMissingRequiredFields($deleteRequiredFields, $inputs);
+                break;
+        }
+
+        $invalidFields = $this->checkForInvalidFields($validFields, $inputs);
+
+        return array_merge($invalidFields, $inputValidationResults, $missingRequiredFields);
+    }
+
+    private function defineResponseStatus($message, $status)
+    {
+        return [ 'message' => $message, 'status' => $status ];
+    }
+
+    /**
+     * @param $inputs
+     * @return array
+     */
+    protected abstract function inputsValidation($inputs);
 
     /**
      * @param $requiredFields
-     * @param $array
+     * @param $inputs
      * @return array
      */
-    private function requiredFields($requiredFields, $array)
+    protected function checkForMissingRequiredFields($requiredFields, $inputs)
     {
         $missingParameters = [];
         foreach ($requiredFields as $key) {
-            $isKeyExists = array_key_exists($key, $array);
+            $isKeyExists = array_key_exists($key, $inputs);
             if (!$isKeyExists) {
                 $missingParameters[$key] = [ 'message' => "Parameter '$key' is required" ];
             }
@@ -117,13 +142,13 @@ abstract class Model extends BaseRoute
 
     /**
      * @param $validFields
-     * @param $array
+     * @param $inputs
      * @return array
      */
-    private function supportedFields($validFields, $array)
+    protected function checkForInvalidFields($validFields, $inputs)
     {
         $invalidParameters = [];
-        foreach ($array as $key => $value) {
+        foreach ($inputs as $key => $value) {
             $isKeyExists = in_array($key, $validFields);
             if (!$isKeyExists) {
                 $invalidParameters[$key] = [ 'message' => "Invalid parameter '$key'" ];

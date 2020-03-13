@@ -12,7 +12,7 @@ class ClassName
             $reflect = new \ReflectionClass($obj);
             return $reflect->getShortName();
         } catch (\ReflectionException $ex) {
-            $log = new Log(env('LOG_PATH'));
+            $log = Log::getInstance(env('LOG_PATH'));
             $log->error($ex->getMessage() . PHP_EOL . $ex->getTraceAsString());
         }
     }

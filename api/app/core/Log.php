@@ -8,12 +8,21 @@ use App\Core\Interfaces\LogInterface;
 class Log implements LogInterface
 {
     private $logFilePath;
+    private static $instance;
+
+    public static function getInstance($logFilePath) {
+        if (is_null(self::$instance)) {
+            self::$instance = new Log($logFilePath);
+        }
+
+        return self::$instance;
+    }
 
     /**
      * Log constructor.
      * @param string $logFilePath
      */
-    public function __construct($logFilePath)
+    protected function __construct($logFilePath)
     {
         $this->logFilePath = $logFilePath;
     }

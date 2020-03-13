@@ -18,7 +18,7 @@ class Country extends Model
      */
     public function __construct()
     {
-        $this->log = new Log(env('LOG_PATH'));
+        $this->log = Log::getInstance(env('LOG_PATH'));
         $this->countryModel = new CountryModel();
 
         parent::__construct();
@@ -31,23 +31,22 @@ class Country extends Model
      */
     public function index($data = [])
     {
-        $requiredFields = [];
-        if ($_SERVER['REQUEST_METHOD'] == RequestMethod::GET) {
-            $requiredFields = [ 'id', 'name', 'key' ];
-        } else if ($_SERVER['REQUEST_METHOD'] == RequestMethod::POST) {
-            $requiredFields = [ 'name', 'key' ];
+        $validFieldsNames = [ 'id', 'name', 'key', 'responseFormat' ];
+        $requiredFieldsNames = [];
+        if ($_SERVER['REQUEST_METHOD'] == RequestMethod::POST) {
+            $requiredFieldsNames = [ 'name', 'key' ];
         } else if ($_SERVER['REQUEST_METHOD'] == RequestMethod::PUT || $_SERVER['REQUEST_METHOD'] == RequestMethod::DELETE) {
-            $requiredFields = [ 'id' ];
+            $requiredFieldsNames = [ 'id' ];
         }
 
-        parent::baseIndex($data, $requiredFields);
+        parent::baseIndex($data, $requiredFieldsNames, $validFieldsNames);
     }
 
     /**
      * @param $inputs
      * @return array
      */
-    protected function inputValidation($inputs)
+    protected function inputsValidation($inputs)
     {
         try {
             $errors = [];
@@ -57,23 +56,6 @@ class Country extends Model
                     case 'id':
                         break;
                     case 'name':
-                        $isNameEmpty = StringHelper::isEmpty($inputs[$key]);
-                        if (isset($inputs[$key]) && $isNameEmpty) {
-                            $errors[$key] = [ 'message' => 'Field cannot be empty' ];
-                        }
-
-                        if (!isset($errors[$key]) && empty($errors[$key])) {
-                            $isNameContainsOnlyLetters = StringHelper::hasOnlyLetters($inputs['name']);
-                            if (!$isNameContainsOnlyLetters) {
-                                $errors[$key] = ['message' => 'Not valid name'];
-                            }
-                        }
-
-                        $country = $this->countryModel->get([ $key => $inputs[$key] ]);
-                        if (isset($country) && !empty($country)) {
-                            $errors[$key] = [ 'message' => 'Record already exists' ];
-                        }
-                        break;
                     case 'key':
                         $isKeyEmpty = StringHelper::isEmpty($inputs[$key]);
                         if (isset($inputs[$key]) && $isKeyEmpty) {
@@ -83,17 +65,16 @@ class Country extends Model
                         if (!isset($errors[$key]) && empty($errors[$key])) {
                             $isKeyContainsOnlyLetters = StringHelper::hasOnlyLetters($inputs[$key]);
                             if (!$isKeyContainsOnlyLetters) {
-                                $errors[$key] = ['message' => 'Not valid key'];
+                                $errors[$key] = ['message' => "Not valid $key"];
                             }
                         }
 
                         $country = $this->countryModel->get([ $key => $inputs[$key] ]);
                         if (isset($country) && !empty($country)) {
-                            $errors[$key] = [ 'message' => 'Record already exists' ];
+                            if (!isset($inputs['id']) || (isset($inputs['id']) && ($inputs['id'] != array_shift($country)['id']))) {
+                                $errors[$key] = [ 'message' => 'Record already exists' ];
+                            }
                         }
-                        break;
-                    default:
-                        $errors[$key] = [ 'message' => "Parameter '$key' is not supported" ];
                         break;
                 }
             }

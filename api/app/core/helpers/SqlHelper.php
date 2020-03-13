@@ -10,7 +10,7 @@ class SqlHelper
 
     public function __construct()
     {
-        $this->log = new Log(env('LOG_PATH'));
+        $this->log = Log::getInstance(env('LOG_PATH'));
     }
 
     /**

@@ -25,24 +25,24 @@ abstract class BaseRoute
      */
     protected function __construct($modelName)
     {
-        $this->log = new Log(env('LOG_PATH'));
+        $this->log = Log::getInstance(env('LOG_PATH'));
         $this->modelName = $modelName;
     }
 
     /**
-     * @param array $data
+     * @param array $inputs
      * @return void
      */
-    protected function baseIndex($data = [])
+    protected function baseIndex($inputs = [])
     {
         try {
             $responseFormat = '';
-            if (isset($data['responseFormat']) && !empty($data['responseFormat'])) {
-                $responseFormat = $data['responseFormat'];
-                unset($data['responseFormat']);
+            if (isset($inputs['responseFormat']) && !empty($inputs['responseFormat'])) {
+                $responseFormat = $inputs['responseFormat'];
+                unset($inputs['responseFormat']);
             }
 
-            $response = $this->request($_SERVER['REQUEST_METHOD'], $data);
+            $response = $this->request($_SERVER['REQUEST_METHOD'], $inputs);
             echo $this->response($response, $responseFormat);
         } catch (\Exception $ex) {
             $this->log->error($ex->getMessage() . PHP_EOL . $ex->getTraceAsString());
