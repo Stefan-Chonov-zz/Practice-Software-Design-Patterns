@@ -31,15 +31,16 @@ class Country extends Model
      */
     public function index($data = [])
     {
-        $validFieldsNames = [ 'id', 'name', 'key', 'responseFormat' ];
-        $requiredFieldsNames = [];
+        $listRequiredFieldsNames = [];
         if ($_SERVER['REQUEST_METHOD'] == RequestMethod::POST) {
-            $requiredFieldsNames = [ 'name', 'key' ];
+            $listRequiredFieldsNames = [ 'name', 'key' ];
         } else if ($_SERVER['REQUEST_METHOD'] == RequestMethod::PUT || $_SERVER['REQUEST_METHOD'] == RequestMethod::DELETE) {
-            $requiredFieldsNames = [ 'id' ];
+            $listRequiredFieldsNames = [ 'id' ];
         }
 
-        parent::baseIndex($data, $requiredFieldsNames, $validFieldsNames);
+        $listValidParametersNames = [ 'id', 'name', 'key', 'responseFormat' ];
+
+        parent::baseIndex($data, $listRequiredFieldsNames, $listValidParametersNames);
     }
 
     /**

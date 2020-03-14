@@ -23,11 +23,11 @@ abstract class Model extends BaseRoute
 
     /**
      * @param array $inputs
-     * @param array $requiredFieldsNames
-     * @param array $validFieldsNames
+     * @param array $listRequiredFieldsNames
+     * @param array $listValidParametersNames
      * @return void
      */
-    protected function baseIndex($inputs = [], $requiredFieldsNames = [], $validFieldsNames = [])
+    protected function baseIndex($inputs = [], $listRequiredFieldsNames = [], $listValidParametersNames = [])
     {
         try {
             $responseFormat = '';
@@ -39,7 +39,7 @@ abstract class Model extends BaseRoute
             $response = [];
             $responseStatus = [];
 
-            $inputsValidationResults = $this->userInputValidation($inputs, $requiredFieldsNames, $validFieldsNames);
+            $inputsValidationResults = $this->userInputValidation($inputs, $listRequiredFieldsNames, $listValidParametersNames);
             if (!isset($inputsValidationResults) || empty($inputsValidationResults)) {
                 $response = parent::request($_SERVER['REQUEST_METHOD'], $inputs);
                 switch ($_SERVER['REQUEST_METHOD']) {
@@ -53,7 +53,7 @@ abstract class Model extends BaseRoute
                         if ($response > 0) {
                             $responseStatus = $this->defineResponseStatus("Record is stored successfully", "OK");
                         } else {
-                            $responseStatus = $this->defineResponseStatus("Nothing to update", "OK");
+                            $responseStatus = $this->defineResponseStatus("Nothing to insert/update", "OK");
                         }
                         $response = [];
                         break;
