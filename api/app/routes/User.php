@@ -37,15 +37,15 @@ class User extends Model
      */
     public function index($inputs = [])
     {
-        $validFields = [ 'id', 'firstName', 'surName', 'address', 'countryId', 'postcode', 'phone', 'email', 'responseFormat' ];
-        $requiredFields = [];
+        $listValidParametersNames = [ 'id', 'firstName', 'surName', 'address', 'countryId', 'postcode', 'phone', 'email', 'responseFormat' ];
+        $listRequiredParametersNames = [];
         if ($_SERVER['REQUEST_METHOD'] == RequestMethod::POST) {
-            $requiredFields = [ 'firstName', 'surName', 'address', 'countryId', 'postcode', 'phone', 'email' ];
+            $listRequiredParametersNames = [ 'firstName', 'surName', 'address', 'countryId', 'postcode', 'phone', 'email' ];
         } else if ($_SERVER['REQUEST_METHOD'] == RequestMethod::PUT || $_SERVER['REQUEST_METHOD'] == RequestMethod::DELETE) {
-            $requiredFields = [ 'id' ];
+            $listRequiredParametersNames = [ 'id' ];
         }
 
-        parent::baseIndex($inputs, $requiredFields, $validFields);
+        parent::baseIndex($inputs, $listRequiredParametersNames, $listValidParametersNames);
     }
 
     /**

@@ -23,11 +23,11 @@ abstract class Model extends BaseRoute
 
     /**
      * @param array $inputs
-     * @param array $listRequiredFieldsNames
+     * @param array $listRequiredParametersNames
      * @param array $listValidParametersNames
      * @return void
      */
-    protected function baseIndex($inputs = [], $listRequiredFieldsNames = [], $listValidParametersNames = [])
+    protected function baseIndex($inputs = [], $listRequiredParametersNames = [], $listValidParametersNames = [])
     {
         try {
             $responseFormat = '';
@@ -39,7 +39,7 @@ abstract class Model extends BaseRoute
             $response = [];
             $responseStatus = [];
 
-            $inputsValidationResults = $this->userInputValidation($inputs, $listRequiredFieldsNames, $listValidParametersNames);
+            $inputsValidationResults = $this->userInputValidation($inputs, $listRequiredParametersNames, $listValidParametersNames);
             if (!isset($inputsValidationResults) || empty($inputsValidationResults)) {
                 $response = parent::request($_SERVER['REQUEST_METHOD'], $inputs);
                 switch ($_SERVER['REQUEST_METHOD']) {

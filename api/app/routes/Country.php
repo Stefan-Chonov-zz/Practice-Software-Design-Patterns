@@ -25,22 +25,22 @@ class Country extends Model
     }
 
     /**
-     * @param array $data
+     * @param array $inputs
      * @return void
      * @throws Exception
      */
-    public function index($data = [])
+    public function index($inputs = [])
     {
-        $listRequiredFieldsNames = [];
+        $listRequiredParametersNames = [];
         if ($_SERVER['REQUEST_METHOD'] == RequestMethod::POST) {
-            $listRequiredFieldsNames = [ 'name', 'key' ];
+            $listRequiredParametersNames = [ 'name', 'key' ];
         } else if ($_SERVER['REQUEST_METHOD'] == RequestMethod::PUT || $_SERVER['REQUEST_METHOD'] == RequestMethod::DELETE) {
-            $listRequiredFieldsNames = [ 'id' ];
+            $listRequiredParametersNames = [ 'id' ];
         }
 
         $listValidParametersNames = [ 'id', 'name', 'key', 'responseFormat' ];
 
-        parent::baseIndex($data, $listRequiredFieldsNames, $listValidParametersNames);
+        parent::baseIndex($inputs, $listRequiredParametersNames, $listValidParametersNames);
     }
 
     /**
